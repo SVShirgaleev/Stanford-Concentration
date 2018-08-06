@@ -22,19 +22,33 @@ class ViewController: UIViewController {
     
     private (set) var flipCount = 0 {
         didSet {
-            flipCountLabel.text = "Flip Count is : \(flipCount)"
-            scoreLabel.text = "\(game.gameScore)"
-            
+            updateFlipCountLabel()
+             scoreLabel.text = "\(game.gameScore)"
         }
+    }
+    
+    private func updateFlipCountLabel() {
+        let attributes: [NSAttributedStringKey: Any] = [
+            .strokeWidth: 5.0,
+            .strokeColor: #colorLiteral(red: 1, green: 0.5763723254, blue: 0, alpha: 1)
+        ]
+        let attributedString = NSAttributedString(string: "Flips: \(flipCount)", attributes: attributes)
+        flipCountLabel.attributedText = attributedString
+       
     }
     
     
     
-    @IBOutlet private weak var flipCountLabel: UILabel!
+    @IBOutlet private weak var flipCountLabel: UILabel!{
+        didSet {
+            updateFlipCountLabel()
+        }
+    }
     @IBOutlet private weak var scoreLabel: UILabel!
     @IBOutlet var cardButtons: [UIButton]!
     
     
+   
     
     
     @IBAction private func touchCard(_ sender: UIButton) {
