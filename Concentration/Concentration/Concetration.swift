@@ -8,15 +8,34 @@
 
 import Foundation
 
-class Concentration {
+struct Concentration {
     var gameScore = 0
     
-    var cards = [Card]()
+    private(set) var cards = [Card]()
     
     var openedCards = [Int]()
     
     
-    var indexOfOneAndOnlyOneFaceUpCard: Int?
+    private var indexOfOneAndOnlyOneFaceUpCard: Int? {
+        get {
+            var foundIndex: Int?
+            for index in cards.indices {
+                if cards[index].isFaceUp {
+                    if foundIndex == nil {
+                       foundIndex = index
+                    } else {
+                        return nil
+                    }
+                }
+            }
+            return foundIndex
+        }
+        set  {
+            for index in cards.indices {
+                cards[index].isFaceUp = (index==newValue)
+            }
+        }
+    }
     
     var isGameComplete: Bool {
         get {
@@ -29,34 +48,28 @@ class Concentration {
         }
     }
     
-    func chooseCards(at index: Int) {
+    mutating func chooseCards(at index: Int) {
+        assert(cards.indices.contains(index), "Concentration.chooseCards(at: \(index): chosen index not in the cards")
         if !cards[index].isMatched {
             if let matchIndex = indexOfOneAndOnlyOneFaceUpCard, matchIndex != index {
                 // check if cards match
-                if cards[matchIndex].identifier == cards[index].identifier {
+                if cards[matchIndex] == cards[index] {
                     cards[matchIndex].isMatched = true
                     cards[index].isMatched = true
                     gameScore += 2
                 }
                 cards[index].isFaceUp = true
-                indexOfOneAndOnlyOneFaceUpCard = nil
-                if wasOpenedBefore(for: cards[index].identifier) {
+                if wasOpenedBefore(to: cards[index]) {
                     gameScore -= 1
                 }
             } else {
-                //either no cards or 2 cards are face up
-                for flipDownIndex in cards.indices {
-                    cards[flipDownIndex].isFaceUp = false
-                }
-                cards[index].isFaceUp = true
                 indexOfOneAndOnlyOneFaceUpCard = index
-                
             }
         }
-        
     }
     
     init(numberOfPairsOfCards : Int) {
+        assert(numberOfPairsOfCards>0, "Concentration.init(\(numberOfPairsOfCards): you must have at least one pair of cards")
         for _ in 1...numberOfPairsOfCards {
             let card = Card()
             cards+=[card, card]
@@ -71,17 +84,18 @@ class Concentration {
         }
      }
     
-    func wasOpenedBefore(for id: Int) -> Bool {
-        if (openedCards.contains(id)){
+    mutating func wasOpenedBefore(to card :Card) -> Bool {
+        if (openedCards.contains(card.hashValue)){
             return true
         } else{
-            openedCards.append(id)
+            openedCards.append(card.hashValue)
             return false
         }
+        
     }
     
     
-    func startNewGame(){
+    mutating func startNewGame(){
         gameScore = 0
         cards.removeAll()
         openedCards.removeAll()

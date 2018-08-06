@@ -11,12 +11,16 @@ import UIKit
 class ViewController: UIViewController {
     
     
-    lazy var game = Concentration(numberOfPairsOfCards: (cardButtons.count+1)/2)
+    private lazy var game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
     
-    public lazy var emojiChoices = randomTheme()
+    var numberOfPairsOfCards: Int {
+            return (cardButtons.count+1)/2
+    }
+    
+    private lazy var emojiChoices = randomTheme()
     
     
-    var flipCount = 0 {
+    private (set) var flipCount = 0 {
         didSet {
             flipCountLabel.text = "Flip Count is : \(flipCount)"
             scoreLabel.text = "\(game.gameScore)"
@@ -24,23 +28,23 @@ class ViewController: UIViewController {
         }
     }
     
-   
     
-    @IBOutlet weak var flipCountLabel: UILabel!
-    @IBOutlet weak var scoreLabel: UILabel!
+    
+    @IBOutlet private weak var flipCountLabel: UILabel!
+    @IBOutlet private weak var scoreLabel: UILabel!
     @IBOutlet var cardButtons: [UIButton]!
     
     
     
     
-    @IBAction func touchCard(_ sender: UIButton) {
+    @IBAction private func touchCard(_ sender: UIButton) {
         flipCount += 1
         if let cardNumber  = cardButtons.index(of: sender){
             game.chooseCards(at: cardNumber)
             updateViewFromModel()
-           // flipCard(withEmoji: emojiChoices[cardNumber], on: sender)
+            // flipCard(withEmoji: emojiChoices[cardNumber], on: sender)
         } else {
-        print (" chosen card was not in cardButton")
+            print (" chosen card was not in cardButton")
         }
         if (game.isGameComplete) {
             updateViewFromModel()
@@ -49,7 +53,7 @@ class ViewController: UIViewController {
         print (game.isGameComplete)
     }
     
-    func updateViewFromModel(){
+    private func updateViewFromModel(){
         
         for index in cardButtons.indices {
             let button = cardButtons[index]
@@ -66,7 +70,7 @@ class ViewController: UIViewController {
     }
     
     
-    func flipCard (withEmoji emoji: String , on button : UIButton){
+    private func flipCard (withEmoji emoji: String , on button : UIButton){
         if button.currentTitle == emoji {
             button.setTitle("", for: UIControlState.normal)
             button.backgroundColor = UIColor.orange
@@ -76,31 +80,31 @@ class ViewController: UIViewController {
         }
     }
     
-    var emoji  = [Int:String]()
+    private var emoji  = [Card:String]()
     
-    func emoji(for card: Card) -> String {
-        if emoji[card.identifier] == nil,(emojiChoices.count)>0 {
-            let randomIndex = Int(arc4random_uniform(UInt32(emojiChoices.count)))
-            emoji[card.identifier] = emojiChoices.remove(at: randomIndex)
+    private func emoji(for card: Card) -> String {
+        if emoji[card] == nil,(emojiChoices.count)>0 {
+            let randomStringIndex = emojiChoices.index(emojiChoices.startIndex, offsetBy: emojiChoices.count.arc4random)
+            emoji[card] = String(emojiChoices.remove(at: randomStringIndex))
         }
-        return emoji[card.identifier] ?? "?"
+        return emoji[card] ?? "?"
     }
     
     
     
     
-    var themesDictionary: Array<Array<String>> = [
-        ["😀","😃","😄","😁","😆","😅","😂","🤣"],
-        ["🐶","🐱","🐭","🐹","🐼","🐻","🦊","🐰"],
-        ["🍏","🍎","🍐","🍊","🍇","🍉","🍌","🍋"],
-        ["⚽️","🏀","🏈","⚾️","🎱","🏉","🏐","🎾"],
-        ["🚗","🚕","🚙","🚌","🚑","🚓","🏎","🚎"],
-        ["🏳️‍🌈","🏳️","🏴","🏁","🚩","🇦🇱","🇦🇽","🇦🇫"],
-        ["🎃","👻", "🌙", "🌔", "⛈", "🌪", "🍙", "🔮"]
-    ]
+    private var themesDictionary: Array<String> = [
+        "😀😃😄😁😆😅😂🤣",
+        "🐶🐱🐭🐹🐼🐻🦊🐰",
+        "🍏🍎🍐🍊🍇🍉🍌🍋",
+        "⚽️🏀🏈⚾️🎱🏉🏐🎾",
+        "🚗🚕🚙🚌🚑🚓🏎🚎",
+        "🏳️‍🌈🏳️🏴🏁🚩🇦🇱🇦🇽🇦🇫",
+        "🎃👻🌙🌔⛈🌪🍙🔮"
+]
     
     
-    func randomTheme()-> Array<String> {
+    private func randomTheme()-> String {
         
         let randomNumber = Int(arc4random_uniform(UInt32(themesDictionary.count)))
         return themesDictionary[randomNumber]
@@ -109,18 +113,30 @@ class ViewController: UIViewController {
     
     
     
-   
-    @IBAction func newGameButton(_ sender: UIButton) {
+    
+    @IBAction private func newGameButton(_ sender: UIButton) {
         
-            //game.startNewGame()
-            flipCount = 0
-            emojiChoices = randomTheme()
-            game = Concentration(numberOfPairsOfCards: (cardButtons.count-1)/2)
-        updateViewFromModel()
+        //game.startNewGame()
+        flipCount = 0
+        emojiChoices = randomTheme()
+        game = Concentration(numberOfPairsOfCards: (cardButtons.count-1)/2)
+        updateViewFromModel() 
     }
+    
+    
+    
+    
+}
 
-    
-    
-    
+extension Int {
+    var arc4random: Int {
+        if self > 0 {
+            return Int(arc4random_uniform(UInt32(self)))
+        } else if self < 0 {
+            return -Int(arc4random_uniform(UInt32(self)))
+        } else {
+            return 0
+        }
+    }
 }
 
